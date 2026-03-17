@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Операция «Код Альфа»: Процентный шторм</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #000;
+            color: white;
+            min-height: 100vh;
+        }
+
+        /* Стили для стартовой страницы */
+        #start-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #8B0000, #B22222, #DC143C, #FF0000);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: alarmBackground 1s infinite alternate;
+            overflow: hidden;
+        }
+
+        .alarm-text {
+            font-size: 4em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 50px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            animation: alarmText 0.5s infinite alternate;
+        }
+
+        .start-btn {
+            background: #ffd54f;
+            color: #8B0000;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.8em;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 30px rgba(255, 213, 79, 0.7);
+        }
+
+        .start-btn:hover {
+            background: #ffca28;
+            transform: scale(1.1);
+            box-shadow: 0 0 40px rgba(255, 213, 79, 1);
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            margin-top: 20px;
+            text-align: center;
+            animation: fadeInOut 3s infinite;
+        }
+
+        /* Стили для основной игры */
+        #game-page {
+            display: none;
+            background: linear-gradient(135deg, #1a237e, #283593);
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 50px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            border: 2px solid #5c6bc0;
+        }
+
+        .game-title {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #ffd54f;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .teams-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .team {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid;
+            min-height: 400px;
+        }
+
+        .team-1 { border-color: #ff6b6b; }
+        .team-2 { border-color: #4ecdc4; }
+        .team-3 { border-color: #ffd93d; }
+
+        .team-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid;
+        }
+
+        .team-1 .team-header { border-color: #ff6b6b; }
+        .team-2 .team-header { border-color: #4ecdc4; }
+        .team-3 .team-header { border-color: #ffd93d; }
+
+        .team-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .team-1 .team-name { color: #ff6b6b; }
+        .team-2 .team-name { color: #4ecdc4; }
+        .team-3 .team-name { color: #ffd93d; }
+
+        .team-role {
+            font-size: 1.1em;
+            color: #b0bec5;
+            margin-bottom: 10px;
+        }
+
+        .team-specialization {
+            font-size: 0.9em;
+            color: #78909c;
+            font-style: italic;
+        }
+
+        .tasks-toggle {
+            background: #5c6bc0;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px 0;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .tasks-toggle:hover {
+            background: #3949ab;
+            transform: scale(1.05);
+        }
+
+        .tasks-container {
+            display: none;
+            margin-top: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .tasks-container.show {
+            display: block;
+        }
+
+        .tasks-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .tasks-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .tasks-container::-webkit-scrollbar-thumb {
+            background: #5c6bc0;
+            border-radius: 4px;
+        }
+
+        .tasks-container::-webkit-scrollbar-thumb:hover {
+            background: #3949ab;
+        }
+
+        .module {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid;
+        }
+
+        .team-1 .module { border-color: #ff6b6b; }
+        .team-2 .module { border-color: #4ecdc4; }
+        .team-3 .module { border-color: #ffd93d; }
+
+        .module-legend {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .team-1 .module-legend { color: #ff6b6b; }
+        .team-2 .module-legend { color: #4ecdc4; }
+        .team-3 .module-legend { color: #ffd93d; }
+
+        .task {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+        }
+
+        .task-number {
+            font-weight: bold;
+            color: #ffd54f;
+        }
+
+        .code-input-section {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        .code-input {
+            font-size: 1.5em;
+            padding: 10px;
+            margin: 10px;
+            width: 200px;
+            text-align: center;
+            border: 2px solid #5c6bc0;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .check-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .check-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .result {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 1.2em;
+            min-height: 30px;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .error {
+            color: #f44336;
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 1.5em;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 2px solid #f44336;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+
+        .btn {
+            background: #ffd54f;
+            color: #1a237e;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 0 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #ffca28;
+            transform: scale(1.05);
+        }
+
+        .btn-reset {
+            background: #f44336;
+            color: white;
+        }
+
+        .final-code-section {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            border: 2px solid #4caf50;
+            margin-bottom: 50px;
+        }
+
+        .final-code-toggle {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .final-code-toggle:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .final-code-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #ffd54f;
+            letter-spacing: 5px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 3px solid #ffd54f;
+            display: none;
+        }
+
+        .final-code-display.show {
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        /* Стили для финальной страницы */
+        #victory-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a237e, #283593, #5c6bc0, #3949ab);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: victoryBackground 3s infinite alternate;
+        }
+
+        .victory-text {
+            font-size: 5em;
+            font-weight: bold;
+            color: #ffd54f;
+            text-align: center;
+            text-shadow: 0 0 30px rgba(255, 213, 79, 0.9);
+            margin-bottom: 30px;
+            animation: victoryText 2s infinite alternate;
+        }
+
+        .victory-subtitle {
+            font-size: 2.5em;
+            color: white;
+            text-align: center;
+            margin-bottom: 50px;
+            animation: fadeInOut 3s infinite;
+        }
+
+        .victory-btn {
+            background: #ffd54f;
+            color: #1a237e;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.5em;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            animation: bounce 2s infinite;
+            box-shadow: 0 0 30px rgba(255, 213, 79, 0.7);
+        }
+
+        .victory-btn:hover {
+            background: #ffca28;
+            transform: scale(1.1);
+            box-shadow: 0 0 40px rgba(255, 213, 79, 1);
+        }
+
+        /* Стили для фейерверков */
+        .firework {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fireworkLaunch 2s ease-out forwards;
+        }
+
+        .particle {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleExplode 1.5s ease-out forwards;
+        }
+
+        /* Анимации */
+        @keyframes alarmBackground {
+            0% { background: linear-gradient(45deg, #8B0000, #B22222, #DC143C, #FF0000); }
+            100% { background: linear-gradient(45deg, #FF0000, #DC143C, #B22222, #8B0000); }
+        }
+
+        @keyframes alarmText {
+            0% { 
+                transform: scale(1);
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            }
+            100% { 
+                transform: scale(1.05);
+                text-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 40px rgba(255, 255, 255, 0.8);
+            }
+        }
+
+        @keyframes victoryBackground {
+            0% { 
+                background: linear-gradient(135deg, #1a237e, #283593, #5c6bc0, #3949ab);
+            }
+            50% {
+                background: linear-gradient(135deg, #283593, #5c6bc0, #3949ab, #1a237e);
+            }
+            100% { 
+                background: linear-gradient(135deg, #5c6bc0, #3949ab, #1a237e, #283593);
+            }
+        }
+
+        @keyframes victoryText {
+            0% { 
+                transform: scale(1);
+                text-shadow: 0 0 20px rgba(255, 213, 79, 0.8);
+            }
+            100% { 
+                transform: scale(1.1);
+                text-shadow: 0 0 40px rgba(255, 213, 79, 1), 0 0 60px rgba(255, 213, 79, 0.8);
+            }
+        }
+
+        @keyframes fireworkLaunch {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 1;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(var(--target-y)) translateX(var(--target-x)) scale(1);
+                opacity: 0;
+            }
+        }
+
+        @keyframes particleExplode {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @media (max-width: 768px) {
+            .alarm-text {
+                font-size: 2.5em;
+            }
+            
+            .start-btn {
+                font-size: 1.4em;
+                padding: 15px 30px;
+            }
+            
+            .teams-container {
+                flex-direction: column;
+            }
+            
+            .team {
+                min-width: 100%;
+            }
+            
+            .game-title {
+                font-size: 2em;
+            }
+            
+            .final-code-display {
+                font-size: 1.8em;
+                letter-spacing: 3px;
+            }
+
+            .tasks-container {
+                max-height: 300px;
+            }
+
+            .victory-text {
+                font-size: 3em;
+            }
+
+            .victory-subtitle {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Стартовая страница с тревогой -->
+    <div id="start-page">
+        <div class="alarm-text">🚨 ТРЕВОГА! ТРЕВОГА! 🚨</div>
+        <button class="start-btn" onclick="startGame()">ПРИНЯТЬ ВЫЗОВ</button>
+        <div class="subtitle">Лаборатория «Альфа» в опасности!<br>Нужны лучшие специалисты!</div>
+    </div>
+
+    <!-- Основная страница игры -->
+    <div id="game-page">
+        <div class="container">
+            <div class="header">
+                <h1 class="game-title">Операция «Код Альфа»: Процентный шторм</h1>
+                <div class="game-description">
+                    <p>ИИ лаборатории «Альфа» атаковал "Процентный вирус". Решите задачи и введите код для спасения лаборатории!</p>
+                </div>
+            </div>
+
+            <div class="timer" id="timer">
+                ⏰ Время: 25:00
+            </div>
+
+            <div class="teams-container">
+                <!-- Команда 1: Инженеры-энергетики -->
+                <div class="team team-1">
+                    <div class="team-header">
+                        <div class="team-name">🛠️ Команда 1</div>
+                        <div class="team-role">ИНЖЕНЕРЫ-ЭНЕРГЕТИКИ</div>
+                        <div class="team-specialization">Системы питания и энергоснабжения</div>
+                    </div>
+
+                    <button class="tasks-toggle" onclick="toggleTasks('team1')">
+                        📋 Показать/Скрыть задания
+                    </button>
+
+                    <div class="tasks-container" id="team1-tasks">
+                        <div class="module">
+                            <div class="module-legend">Модуль 1: «Энергоблок А»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 1:</span> Расчетная мощность турбины — 80 МВт. Из-за перегрузки она работает на 65% от мощности. Какая фактическая мощность?
+                            </div>
+                        </div>
+
+                        <div class="module">
+                            <div class="module-legend">Модуль 2: «Система охлаждения»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 2:</span> Объем теплоносителя — 200 литров. Заполнено на 45%. Сколько литров в системе?
+                            </div>
+                        </div>
+
+                        <div class="module">
+                            <div class="module-legend">Модуль 3: «Резервные генераторы»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 3:</span> Из 12 генераторов работают 9. Сколько процентов оборудования задействовано?
+                            </div>
+                        </div>
+
+                        <div class="module">
+                            <div class="module-legend">Модуль 4: «Топливные баки»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 4:</span> Полная емкость бака — 5000 л. Заправлено на 28%. Сколько литров топлива?
+                            </div>
+                        </div>
+
+                        <div class="module">
+                            <div class="module-legend">Модуль 5: «Солнечные панели»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 5:</span> Номинальная эффективность панелей — 400 Вт/м². Фактическая — 85%. Какая реальная эффективность?
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="code-input-section">
+                        <div>Введите код команды 1:</div>
+                        <input type="text" class="code-input" id="team1-code" placeholder="X-X-X-X-X" maxlength="9">
+                        <button class="check-btn" onclick="checkCode(1)">Проверить код</button>
+                        <div class="result" id="team1-result"></div>
+                    </div>
+                </div>
+
+                <!-- Команда 2: IT-специалисты -->
+                <div class="team team-2">
+                    <div class="team-header">
+                        <div class="team-name">💻 Команда 2</div>
+                        <div class="team-role">IT-СПЕЦИАЛИСТЫ</div>
+                        <div class="team-specialization">Компьютерные системы и базы данных</div>
+                    </div>
+
+                    <button class="tasks-toggle" onclick="toggleTasks('team2')">
+                        📋 Показать/Скрыть задания
+                    </button>
+
+                    <div class="tasks-container" id="team2-tasks">
+                        <div class="module">
+                            <div class="module-legend">Модуль 1: «Серверная комната»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 1:</span> Из 24 серверов вирус атаковал 18. Сколько процентов оборудования заражено?
+                            </div>
+                        </div>
+
+                        <div class="module">
+                            <div class="module-legend">Модуль 2: «База данных»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 2:</span> Общий объем данных — 800 Гб. Повреждено 25%. Сколько Гб утрачено?
+                            </div>
+                        </div>
+
+                        <div class="module">
+                            <div class="module-legend">Модуль 3: «Сетевое оборудование»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 3:</span> Пропускная способность канала — 1 Гбит/с. Загружено на 60%. Какая реальная скорость?
+                            </div>
+                        </div>
+
+                        <div class="module">
+                            <div class="module-legend">Модуль 4: «Резервное копирование»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 4:</span> Из 450 файлов сохранено 351. Сколько процентов данных защищено?
+                            </div>
+                        </div>
+
+                        <div class="module">
+                            <div class="module-legend">Модуль 5: «Системы мониторинга»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 5:</span> 35 из 50 датчиков передают данные. Сколько процентов систем онлайн?
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="code-input-section">
+                        <div>Введите код команды 2:</div>
+                        <input type="text" class="code-input" id="team2-code" placeholder="X-X-X-X-X" maxlength="9">
+                        <button class="check-btn" onclick="checkCode(2)">Проверить код</button>
+                        <div class="result" id="team2-result"></div>
+                    </div>
+                </div>
+
+                <!-- Команда 3: Финансисты -->
+                <div class="team team-3">
+                    <div class="team-header">
+                        <div class="team-name">📊 Команда 3</div>
+                        <div class="team-role">ФИНАНСИСТЫ И ЛОГИСТЫ</div>
+                        <div class="team-specialization">Бюджет и ресурсы</div>
+                    </div>
+
+                    <button class="tasks-toggle" onclick="toggleTasks('team3')">
+                        📋 Показать/Скрыть задания
+                    </button>
+
+                    <div class="tasks-container" id="team3-tasks">
+                        <div class="module">
+                            <div class="module-legend">Модуль 1: «Бюджет лаборатории»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 1:</span> На оборудование выделили 45 000 руб. (15% бюджета). Каков общий бюджет?
+                            </div>
+                        </div>
+
+                        <div class="module">
+                            <div class="module-legend">Модуль 2: «Закупка реактивов»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 2:</span> Закупили 84 кг вещества (70% от плана). Каков был план закупки?
+                            </div>
+                        </div>
+
+                        <div class="module">
+                            <div class="module-legend">Модуль 3: «Фонд зарплат»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 3:</span> Фонд 500 000 руб. Премии составили 20%. Сколько рублей на премии?
+                            </div>
+                        </div>
+
+                        <div class="module">
+                            <div class="module-legend">Модуль 4: «Логистика»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 4:</span> Из 60 поставок 42 доставлены вовремя. Сколько процентов по графику?
+                            </div>
+                        </div>
+
+                        <div class="module">
+                            <div class="module-legend">Модуль 5: «Инвестиции»</div>
+                            <div class="task">
+                                <span class="task-number">Задача 5:</span> Инвестировали 75 000 руб. (25% от суммы). Какова общая сумма?
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="code-input-section">
+                        <div>Введите код команды 3:</div>
+                        <input type="text" class="code-input" id="team3-code" placeholder="X-X-X-X-X" maxlength="9">
+                        <button class="check-btn" onclick="checkCode(3)">Проверить код</button>
+                        <div class="result" id="team3-result"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Секция с итоговым кодом -->
+            <div class="final-code-section">
+                <button class="final-code-toggle" onclick="toggleFinalCode()">
+                    🎯 Показать/Скрыть итоговый код
+                </button>
+                <div class="final-code-display" id="final-code">
+                    5-9-7-1-3-7-2-6-7-7-3-1-1-7-3
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" onclick="startTimer()">🎮 Начать игру</button>
+                <button class="btn btn-reset" onclick="resetGame()">🔄 Сбросить игру</button>
+                <button class="btn" onclick="showAllTasks()">📖 Показать все задания</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Финальная страница победы -->
+    <div id="victory-page">
+        <div class="victory-text">🎉 МИССИЯ ВЫПОЛНЕНА! 🎉</div>
+        <div class="victory-subtitle">Лаборатория «Альфа» спасена!<br>Благодарим всех специалистов!</div>
+        <button class="victory-btn" onclick="restartGame()">🔄 Начать заново</button>
+    </div>
+
+    <script>
+        // Правильные коды для каждой команды
+        const correctCodes = {
+            1: "59713",
+            2: "72677", 
+            3: "31173"
+        };
+
+        let timer;
+        let timeLeft = 25 * 60;
+        let gameStarted = false;
+        let completedTeams = new Set();
+        let fireworksInterval;
+
+        // Функция запуска игры (переход со стартовой страницы)
+        function startGame() {
+            document.getElementById('start-page').style.display = 'none';
+            document.getElementById('game-page').style.display = 'block';
+        }
+
+        // Функция для переключения отображения заданий
+        function toggleTasks(teamId) {
+            const tasksContainer = document.getElementById(`${teamId}-tasks`);
+            tasksContainer.classList.toggle('show');
+        }
+
+        // Функция для переключения итогового кода
+        function toggleFinalCode() {
+            const finalCodeElement = document.getElementById('final-code');
+            finalCodeElement.classList.toggle('show');
+        }
+
+        // Функция для проверки кода
+        function checkCode(teamNumber) {
+            const inputElement = document.getElementById(`team${teamNumber}-code`);
+            const resultElement = document.getElementById(`team${teamNumber}-result`);
+            const userCode = inputElement.value.trim();
+            const correctCode = correctCodes[teamNumber];
+
+            if (userCode === correctCode) {
+                resultElement.textContent = "✅ Код верный! Задание выполнено!";
+                resultElement.className = "result success";
+                inputElement.style.borderColor = "#4caf50";
+                
+                // Добавляем команду в список завершивших
+                completedTeams.add(teamNumber);
+                
+                // Проверяем, все ли команды завершили
+                checkAllTeamsCompleted();
+            } else {
+                resultElement.textContent = "❌ Код неверный! Попробуйте еще раз.";
+                resultElement.className = "result error";
+                inputElement.style.borderColor = "#f44336";
+            }
+        }
+
+        // Функция для проверки завершения всеми командами
+        function checkAllTeamsCompleted() {
+            if (completedTeams.size === 3) {
+                // Показываем финальную страницу через 2 секунды
+                setTimeout(() => {
+                    showVictoryPage();
+                }, 2000);
+            }
+        }
+
+        // Функция показа финальной страницы
+        function showVictoryPage() {
+            document.getElementById('game-page').style.display = 'none';
+            document.getElementById('victory-page').style.display = 'flex';
+            
+            // Запускаем фейерверки
+            startFireworks();
+            
+            // Останавливаем таймер
+            clearInterval(timer);
+        }
+
+        // Функция перезапуска игры
+        function restartGame() {
+            document.getElementById('victory-page').style.display = 'none';
+            document.getElementById('game-page').style.display = 'block';
+            
+            // Останавливаем фейерверки
+            stopFireworks();
+            
+            // Сбрасываем игру
+            resetGame();
+        }
+
+        // Функция для запуска фейерверков
+        function startFireworks() {
+            fireworksInterval = setInterval(createFirework, 300);
+        }
+
+        // Функция для остановки фейерверков
+        function stopFireworks() {
+            clearInterval(fireworksInterval);
+        }
+
+        // Функция создания одного фейерверка
+        function createFirework() {
+            const victoryPage = document.getElementById('victory-page');
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            
+            // Случайный цвет фейерверка
+            const colors = ['#ffd54f', '#4caf50', '#f44336', '#2196f3', '#9c27b0', '#00bcd4', '#ff6b6b', '#4ecdc4', '#ffd93d'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            firework.style.background = color;
+            
+            // Случайная позиция запуска
+            const startX = Math.random() * window.innerWidth;
+            firework.style.left = startX + 'px';
+            firework.style.bottom = '0px';
+            
+            // Случайная цель взрыва
+            const targetX = (Math.random() - 0.5) * 100;
+            const targetY = Math.random() * window.innerHeight * 0.7;
+            
+            firework.style.setProperty('--target-x', targetX + 'px');
+            firework.style.setProperty('--target-y', -targetY + 'px');
+            
+            victoryPage.appendChild(firework);
+            
+            // Создаем частицы после взрыва
+            setTimeout(() => {
+                createParticles(startX + targetX, window.innerHeight - targetY, color);
+                firework.remove();
+            }, 2000);
+        }
+
+        // Функция создания частиц взрыва
+        function createParticles(x, y, color) {
+            const victoryPage = document.getElementById('victory-page');
+            const particleCount = 40;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.background = color;
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                
+                // Случайное направление разлета
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 60 + Math.random() * 120;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+                
+                victoryPage.appendChild(particle);
+                
+                // Удаляем частицу после анимации
+                setTimeout(() => {
+                    particle.remove();
+                }, 1500);
+            }
+        }
+
+        // Функция для показа всех заданий
+        function showAllTasks() {
+            [1, 2, 3].forEach(teamNumber => {
+                const tasksContainer = document.getElementById(`team${teamNumber}-tasks`);
+                tasksContainer.classList.add('show');
+            });
+        }
+
+        // Таймер игры
+        function startTimer() {
+            if (gameStarted) return;
+            
+            gameStarted = true;
+            const timerElement = document.getElementById('timer');
+            timer = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerElement.textContent = `⏰ Время: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 300) {
+                    timerElement.style.background = "rgba(244, 67, 54, 0.7)";
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    timerElement.textContent = "⏰ Время вышло!";
+                    timerElement.style.background = "rgba(244, 67, 54, 0.9)";
+                    alert("Время вышло! Лаборатория нуждается в вас!");
+                }
+            }, 1000);
+        }
+
+        function resetGame() {
+            clearInterval(timer);
+            if (fireworksInterval) clearInterval(fireworksInterval);
+            timeLeft = 25 * 60;
+            gameStarted = false;
+            completedTeams.clear();
+            
+            document.getElementById('timer').textContent = "⏰ Время: 25:00";
+            document.getElementById('timer').style.background = "rgba(255, 0, 0, 0.3)";
+            
+            // Сбрасываем все поля ввода и результаты
+            [1, 2, 3].forEach(teamNumber => {
+                document.getElementById(`team${teamNumber}-code`).value = "";
+                document.getElementById(`team${teamNumber}-result`).textContent = "";
+                document.getElementById(`team${teamNumber}-code`).style.borderColor = "#5c6bc0";
+            });
+            
+            // Скрываем итоговый код
+            document.getElementById('final-code').classList.remove('show');
+        }
+
+        // Добавляем обработчики для Enter в полях ввода
+        document.addEventListener('DOMContentLoaded', function() {
+            [1, 2, 3].forEach(teamNumber => {
+                const input = document.getElementById(`team${teamNumber}-code`);
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        checkCode(teamNumber);
+                    }
+                });
+                
+                // Устанавливаем плейсхолдеры
+                input.placeholder = "X-X-X-X-X";
+            });
+        });
+    </script>
+</body>
+</html>
